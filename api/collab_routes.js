@@ -13,7 +13,8 @@ collabRouter.post('/createRoom', (req, res) => {
     const collabId = uuid.v4();
 
     const entry = {
-        users: [req.body.name]
+        users: [req.body.name],
+        activeUsers: []
     }
 
     collection.set(collabId, entry );
@@ -41,7 +42,8 @@ collabRouter.post('/joinRoom', (req, res) => {
         // set the new entry
 
         const entry = {
-            users: newUsers
+            users: newUsers,
+            activeUsers: [...(collection.get(collabId).activeUsers)]
         }
 
         collection.set(collabId, entry);
@@ -60,5 +62,36 @@ collabRouter.post('/joinRoom', (req, res) => {
 
 });
 
+collabRouter.post('/activeHook', (req, res) => {
+
+    // fetch the collection
+    const oldActiveUsers = collection.get(req.body.collabId).activeUsers;
+    
+    // check for reduntant active username
+    const userExist = oldActiveUsers.includes(req.body.activeUser);
+    console.log(userExist);
+    
+    if(userExist == true) {
+        console.log('user already exist skipping');
+    }
+    else {
+
+        const newActiveUsers = [...oldActiveUsers, req.body.activeUser];
+
+        const entry = {
+            activeUsers: newActiveUsers,
+            users: [...(collection.get(req.body.collabId).users)]
+        };
+
+        collection.set(req.body.collabId, entry);
+        console.log(collection);
+        
+        res.status(200).json({
+            message: 'Success'
+        });
+    }
+
+    
+});
 
 module.exports = collabRouter;
