@@ -90,8 +90,42 @@ collabRouter.post('/activeHook', (req, res) => {
             message: 'Success'
         });
     }
-
     
 });
+
+collabRouter.post('/leftHook', (req, res) => {
+
+    // fetch the collection
+    const collabId = req.body.collabId;
+    const userLeft = req.body.userLeft;
+
+    console.log(req.body);
+
+    const oldActiveUsers = collection.get(collabId).activeUsers;
+    const newActiveUsers = oldActiveUsers.filter((elem) => elem != userLeft);
+
+    const entry = {
+        activeUsers: newActiveUsers,
+        users: collection.get(collabId).users,
+    };
+
+    // set the new key-value
+    collection.set(collabId, entry);
+    console.log(collection);
+
+    res.json({
+        sucess:'success'
+    });
+
+});
+
+collabRouter.get('/getActiveUsers', (req, res) => {
+
+    const collabId = req.query.id;
+    
+    const activeUsers = collection.get(collabId).activeUsers;
+    
+    res.json(activeUsers);
+})
 
 module.exports = collabRouter;

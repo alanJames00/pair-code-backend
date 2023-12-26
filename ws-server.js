@@ -12,7 +12,7 @@ io.on('connection', (socket) => {
     console.log(`New connection`);
     
     // handle room-join
-    socket.on('join-room', message => {
+    socket.on('join-room', async (message) => {
         console.log(`${socket.id} joined collab ${message.collabId} with username ${message.user}`);
         socket.join(message.collabId);
         // broadcast new user joining
@@ -21,7 +21,7 @@ io.on('connection', (socket) => {
         // make a fetch request to update in the db
         try {
 
-            fetch('http://localhost:4000/collab/activeHook', {
+            await fetch('http://localhost:4000/collab/activeHook', {
                 method: 'POST',
                 headers: {
                     'Content-Type' : 'application/json'
@@ -42,12 +42,26 @@ io.on('connection', (socket) => {
             // broadcast the code changes
         })
 
-        socket.on('send-left-room', userLeft => {
+        socket.on('send-left-room', async (userLeft) => {
             console.log(`${userLeft} left the room`);
 
             socket.broadcast.to(message.collabId).emit('receive-left-room', userLeft);
 
             // fetch to update in db
+            try {
+
+               await fetch('http://localhost:4000/collab/leftHook', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type' : 'application/json'
+                    },
+                    body: JSON.stringify({ userLeft: userLeft, collabId: message.collabId})
+                });
+            }
+            catch(e) {
+                console.log('crashed 62');
+                console.log(e);
+            }
         })
     })
 });
