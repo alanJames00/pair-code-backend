@@ -19,6 +19,9 @@ const app = express();
 const PORT = 4000;
 const userRouter = require('./api/user_routes');
 const collabRouter = require('./api/collab_routes');
+const cors = require('cors');
+
+app.use(cors());
 
 app.use('/users', userRouter);
 app.use('/collab', collabRouter);
